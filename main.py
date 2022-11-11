@@ -16,7 +16,7 @@ def solve_congruence(a, b, m, var_name="x") -> (str, int):
     """Solve ax = b mod m"""
 
     res = f"Решение сравнения: {a} * {var_name} = {b} mod {m}\n"
-    #Можно самим реализовать алгоритм в выводом TODO
+    # Можно самим реализовать алгоритм в выводом TODO
 
     try:
         x, mx = solve_linear_congruence(a, b, m)
@@ -67,7 +67,7 @@ def rsa_encrypt(m=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str
             res += f"n = p * q = {p} * {q} = {n}\n"
 
         if e is None:
-            #if d is None: #(e, fn) = 1 TODO
+            # if d is None: #(e, fn) = 1 TODO
 
             if fn is None:
                 fn = (p - 1) * (q - 1)
@@ -87,7 +87,7 @@ def rsa_encrypt(m=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str
 
 
 def rsa_decrypt(c=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str, int):
-    res = f"Расифрование данных алгоритмом RSA:\n"
+    res = f"Расшифрование данных алгоритмом RSA:\n"
     m = None
 
     try:
@@ -116,7 +116,7 @@ def rsa_decrypt(c=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str
 
 
 def rsa_sign(m=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str, int):
-    res = f"Шифрование данных алгоритмом RSA:\n"
+    res = f"Подпись сообщения алгоритмом RSA:\n"
     c = None
 
     try:
@@ -125,7 +125,7 @@ def rsa_sign(m=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str, i
             res += f"n = p * q = {p} * {q} = {n}\n"
 
         if d is None:
-            #if e is None: #(e, fn) = 1 TODO
+            # if e is None: #(e, fn) = 1 TODO
 
             if fn is None:
                 fn = (p - 1) * (q - 1)
@@ -145,7 +145,7 @@ def rsa_sign(m=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str, i
 
 
 def rsa_check_sign(c=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (str, int):
-    res = f"Расифрование данных алгоритмом RSA:\n"
+    res = f"Проверка подписи алгоритмом RSA:\n"
     m = None
 
     try:
@@ -173,6 +173,72 @@ def rsa_check_sign(c=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (
     return res, m
 
 
+def el_gamal_encrypt(m=None, p=None, g=None, y=None, x=None, k = None) -> (str, int, int):
+    res = f"Шифрование данных алгоритмом Эль Гамаля:\n"
+    res+= f"a = g^k mod p\n"
+    res+= f"a = {g}^{k} mod {p}\n"
+    s, a = quick_pow(g, k, p)
+    res+= f"b = m * y^k mod p\n"
+    res+= f"b = {m} * {y}^{k} mod {p}\n"
+    s, b = quick_pow(y, k, p)
+    b = b * m % p
+    res+=f"(a, b) = ({a}, {b})\n"
+
+    return res, a, b
+
+
+def el_gamal_decrypt(p=None, g=None, y=None, x=None, a=None, b=None) -> (str, int):
+    res = f"Дешифрование данных алгоритмом Эль Гамаля:\n"
+    res+= f"message = (b / a^x) mod p\n"
+    res+= f"message = ({b} / a^{x}) mod {p}\n"
+    s, a_pow_x = quick_pow(a, x, p)
+    res+=s
+    s, m = solve_congruence(a_pow_x, b, p, "message")
+    res+=s
+    res+= f"message = {m}\n"
+    return res, m
+
+
+def el_gamal_sign(m=None, p=None, g=None, y=None, x=None, k=None) -> (str, int, int, int):
+    res = f"Подпись сообщения алгоритмом Эль Гамаля:\n"
+
+    if y == None:
+        res+=f"y = {g}^{x} mod {p}\n"
+        s, y = quick_pow(g, x, p)
+        res+=s
+    
+    res+=f"r = g^k mod p\n"
+    res+=f"r = {g}^{k} mod {p}\n"
+    s, r = quick_pow(g, k, p)
+    res+=s
+    res+=f"sig = (m - x*r/k) mod (p - 1)\n"
+    res+=f"sig = ({m - x*r}/{k}) mod {p - 1}\n"
+    s, sig = solve_congruence(k, m - x*r, p - 1)
+    res+=s
+    res+= f"Подписанное сообщение <{m}, {r}, {sig}>\n"
+
+    return res, m, r, sig
+
+
+def el_gamal_check_sign(m=None, p=None, g=None, y=None, r=None, sig=None) -> str:
+    res = f"Проверка подписи алгоритмом Эль Гамаля:\n"
+    res+= f"Подписанное сообщение <{m}, {r}, {sig}>, открытый ключ y={y}\n"
+    res+=f"Проверяем сравнение y^r * r^s mod p = g^m mod p\n"
+    res+=f"{y}^{r} * {r}^{sig} mod {p} ? {g}^{m} mod {p}\n"
+    s, y_pow_r = quick_pow(y, r, p)
+    s, r_pow_sig = quick_pow(r, sig, p)
+    left_value = y_pow_r*r_pow_sig % p
+    s, right_value = quick_pow(g, m, p)
+    res+=f"{y_pow_r} * {r_pow_sig} mod {p} ? {right_value} mod {p}\n"
+    res+=f"{left_value} mod {p} ? {right_value} mod {p}\n"
+    if (left_value == right_value):
+        res+=f"Подпись верна\n"
+    else:
+        res+=f"Подпись неверна\n"
+    
+    return res
+
+
 def test():
     output, num = quick_pow(175, 235, 257)
     print(output)
@@ -185,6 +251,14 @@ def test():
     output, num = rsa_sign(p=5, q=11, d=3, m=40)
     print(output)
     output, num = rsa_check_sign(p=5, q=11, d=3, c=35)
+    print(output)
+    output, a, b = el_gamal_encrypt(m=5, p=29, g=10, y=8, x=5, k=5)
+    print(output)
+    output, num = el_gamal_decrypt(p=23, g=5, y=9, x=10, a=10, b=18)
+    print(output)
+    output, m, r, sig = el_gamal_sign(m=3, p=23, g=5, y=17, x=7, k=5)
+    print(output)
+    output = el_gamal_check_sign(m=3, p=23, g=5, y=17, r=20, sig=21)
     print(output)
 
 
