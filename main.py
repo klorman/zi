@@ -239,6 +239,35 @@ def el_gamal_check_sign(m=None, p=None, g=None, y=None, r=None, sig=None) -> str
     return res
 
 
+def miller_test(a, n) -> (str, bool):
+    res = f"Тест Миллера на простоту числа n = {n} со свидетелем простоты a = {a}:\n"
+    res += "n - 1 = r * 2 ^ s\n"
+
+    r = n - 1
+    s = 0
+    while r % 2 == 0:
+        r //= 2
+        s += 1
+
+    res += f"{n} - 1 = {r} * 2 ^ {s}\n"
+
+    primality = False
+    for i in range(s + 1):
+        s, x = quick_pow(a, (2 ** i) * r, n)
+        res += f"a^(2^{i} * {r}) mod n = {x}\n"
+        res += s
+
+        if x == n - 1:
+            res += f"В ряду есть -1 (все остальные 1) => a = {a} свидетель простоты числа n = {n}\n"
+            primality = True
+            break
+
+    if not primality:
+        res += f"Число n = {n} - составное (a = {a} не является свидетелем его простоты)\n"
+
+    return res, primality
+
+
 def test():
     output, num = quick_pow(175, 235, 257)
     print(output)
@@ -259,6 +288,8 @@ def test():
     output, m, r, sig = el_gamal_sign(m=3, p=23, g=5, y=17, x=7, k=5)
     print(output)
     output = el_gamal_check_sign(m=3, p=23, g=5, y=17, r=20, sig=21)
+    print(output)
+    output, primality = miller_test(a=104, n=145)
     print(output)
 
 
