@@ -278,17 +278,15 @@ def sqrt(num, m):
 
 def psum(t1, t2, a, p):
     if t1 == t2:
-        alfa = solve_linear_congruence(2 * t1[1], 3 * t1[0]**2 + a, p)[0] % p
-        print(f'alfa = {alfa}')
+        alfa = solve_linear_congruence(2 * t1[1], 3 * t1[0]**2 + a, p)[0]
         x = (alfa**2 - 2 * t1[0]) % p
         y = (-(t1[1] + alfa*(x - t1[0]))) % p
-        return (x, y)
+        return (x, y), f'alfa = {alfa}\n'
     else:
-        alfa = solve_linear_congruence(t2[0] - t1[0], t2[1] - t1[1], p)[0] % p
-        print(f'alfa = {alfa}')
+        alfa = solve_linear_congruence(t2[0] - t1[0], t2[1] - t1[1], p)[0]
         x = (alfa**2 - t1[0] - t2[0]) % p
         y = (-(t2[1] + alfa*(x - t2[0]))) % p
-        return (x, y)
+        return (x, y), f'alfa = {alfa}\n'
 
 #Найти группу точек(перечислить) эллиптической кривой y^2=ax^3+bx+c над Fp
 def z1(p, a, b, c):
@@ -308,6 +306,43 @@ def z1(p, a, b, c):
 
     return res
 
+
+def z4(g, a, b, p):
+    res = f'Генерация ключа по протоколу Диффи-Хеллмана:\n'
+    s, ka = quick_pow(g, a, p)
+    res += s
+    s, kab = quick_pow(ka, b, p)
+    res += s
+    res += f'Ka = g^a mod p = {g}^{a} mod {p} = {ka}\nKab = Ka^b mod p = {ka}^{b} mod {p} = {kab}\n'
+    return res
+
+
+#вспомогательная функция
+def s1(g, a, p, k): #я заебался придумывать названия переменных и функций
+    if k == 2:
+        r, ret = psum(g, g, a, p)
+        return r, ret + f'G + G = {r}\n'
+    elif k % 2 == 0:
+        k //= 2
+        A, s = s1(g, a, p, k)
+        r, ret = psum(A, A, a, p)
+        return r, s + ret + f'{k}G + {k}G = {r}\n'
+    elif k % 2 == 1:
+        k -= 1
+        A, s = s1(g, a, p, k)
+        r, ret = psum(A, g, a, p)
+        return r, s + ret + f'{k}G + G = {r}\n'
+
+
+#aaa - второй коэфф в данном уравнении
+def z5(g, a, b, p, aaa): #я заебался придумывать названия переменных
+    res = f'Генерация ключа по протоколу Диффи-Хеллмана:\n'
+    res += f'K = (ab) G\n'
+    k = a * b
+    K, s = s1(g, aaa, p, k)
+    res += s
+    res += f'K = {K}\n'
+    return res
 
 
 def test():
@@ -333,6 +368,8 @@ def test():
     #print(output)
     #output, primality = miller_test(a=104, n=145)
     output = z1(p=13, a=1, b=-2, c=-10)
+    output = z4(g=10, a=9, b=13, p=17)
+    output = z5(g=(2, 1), a=2, b=3, p=11, aaa=-5)
     print(output)
 
 
