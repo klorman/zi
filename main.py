@@ -268,28 +268,71 @@ def miller_test(a, n) -> (str, bool):
     return res, primality
 
 
+def sqrt(num, m):
+    res = []
+    for x in range(0, m):
+        if (x ** 2) % m == num:
+            res.append(x)
+    return res
+
+
+def psum(t1, t2, a, p):
+    if t1 == t2:
+        alfa = solve_linear_congruence(2 * t1[1], 3 * t1[0]**2 + a, p)[0] % p
+        print(f'alfa = {alfa}')
+        x = (alfa**2 - 2 * t1[0]) % p
+        y = (-(t1[1] + alfa*(x - t1[0]))) % p
+        return (x, y)
+    else:
+        alfa = solve_linear_congruence(t2[0] - t1[0], t2[1] - t1[1], p)[0] % p
+        print(f'alfa = {alfa}')
+        x = (alfa**2 - t1[0] - t2[0]) % p
+        y = (-(t2[1] + alfa*(x - t2[0]))) % p
+        return (x, y)
+
+#Найти группу точек(перечислить) эллиптической кривой y^2=ax^3+bx+c над Fp
+def z1(p, a, b, c):
+    res = f'Найти группу точек(перечислить) эллиптической кривой y^2={a}x^3+{b}x+{c} над F{p}\n'
+    res += f'Составим таблицу квадратов для F{p} и определим какие из точек при подстановке в y^2={a}x^3+{b}x+{c} дают полный квадрат\n'
+
+    res += 'x     |' + ' '.join([f'{x:<5}|' for x in range(0, p)]) + '\n'
+    res += 'x^2   |' + ' '.join([f'{(x**2)%p:<5}|' for x in range(0, p)]) + '\n'
+    res += 'x^3   |' + ' '.join([f'{(x**3)%p:<5}|' for x in range(0, p)]) + '\n'
+    res += f'{b:<2}x   |' + ' '.join([f'{(x*b)%p:<5}|' for x in range(0, p)]) + '\n'
+    y_sqr = [(a*(x**3) + b*x + c)%p for x in range(0, p)]
+    res += 'y^2   |' + ' '.join([f'{y:<5}|' for y in y_sqr]) + '\n'
+    y_sqrt = [sqrt(y, p) for y in y_sqr]
+    res += 'y1 y2 |' + ' '.join([f'{y[0]:<2}' + f' {y[1]:<2}|' if len(y) == 2 else '  -  |' for y in y_sqrt]) + '\n'
+
+    res += 'В ответ нужно выписать все точки (x, y1) (x, y2) и 0'
+
+    return res
+
+
+
 def test():
-    output, num = quick_pow(175, 235, 257)
-    print(output)
-    output, num = solve_congruence(7, 2, 10)
-    print(output)
-    output, num = rsa_encrypt(p=7, q=11, m=29, d=7)
-    print(output)
-    output, num = rsa_decrypt(p=7, q=11, e=43, c=19)
-    print(output)
-    output, num = rsa_sign(p=5, q=11, d=3, m=40)
-    print(output)
-    output, num = rsa_check_sign(p=5, q=11, d=3, c=35)
-    print(output)
-    output, a, b = el_gamal_encrypt(m=5, p=29, g=10, y=8, x=5, k=5)
-    print(output)
-    output, num = el_gamal_decrypt(p=23, g=5, y=9, x=10, a=10, b=18)
-    print(output)
-    output, m, r, sig = el_gamal_sign(m=3, p=23, g=5, y=17, x=7, k=5)
-    print(output)
-    output = el_gamal_check_sign(m=3, p=23, g=5, y=17, r=20, sig=21)
-    print(output)
-    output, primality = miller_test(a=104, n=145)
+    #output, num = quick_pow(175, 235, 257)
+    #print(output)
+    #output, num = solve_congruence(7, 2, 10)
+    #print(output)
+    #output, num = rsa_encrypt(p=7, q=11, m=29, d=7)
+    #print(output)
+    #output, num = rsa_decrypt(p=7, q=11, e=43, c=19)
+    #print(output)
+    #output, num = rsa_sign(p=5, q=11, d=3, m=40)
+    #print(output)
+    #output, num = rsa_check_sign(p=5, q=11, d=3, c=35)
+    #print(output)
+    #output, a, b = el_gamal_encrypt(m=5, p=29, g=10, y=8, x=5, k=5)
+    #print(output)
+    #output, num = el_gamal_decrypt(p=23, g=5, y=9, x=10, a=10, b=18)
+    #print(output)
+    #output, m, r, sig = el_gamal_sign(m=3, p=23, g=5, y=17, x=7, k=5)
+    #print(output)
+    #output = el_gamal_check_sign(m=3, p=23, g=5, y=17, r=20, sig=21)
+    #print(output)
+    #output, primality = miller_test(a=104, n=145)
+    output = z1(p=13, a=1, b=-2, c=-10)
     print(output)
 
 
