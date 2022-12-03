@@ -173,29 +173,29 @@ def rsa_check_sign(c=None, e=None, d=None, n=None, p=None, q=None, fn=None) -> (
     return res, m
 
 
-def el_gamal_encrypt(m=None, p=None, g=None, y=None, x=None, k = None) -> (str, int, int):
+def el_gamal_encrypt(m=None, p=None, g=None, y=None, x=None, k=None) -> (str, int, int):
     res = f"Шифрование данных алгоритмом Эль Гамаля:\n"
-    res+= f"a = g^k mod p\n"
-    res+= f"a = {g}^{k} mod {p}\n"
+    res += f"a = g^k mod p\n"
+    res += f"a = {g}^{k} mod {p}\n"
     s, a = quick_pow(g, k, p)
-    res+= f"b = m * y^k mod p\n"
-    res+= f"b = {m} * {y}^{k} mod {p}\n"
+    res += f"b = m * y^k mod p\n"
+    res += f"b = {m} * {y}^{k} mod {p}\n"
     s, b = quick_pow(y, k, p)
     b = b * m % p
-    res+=f"(a, b) = ({a}, {b})\n"
+    res += f"(a, b) = ({a}, {b})\n"
 
     return res, a, b
 
 
 def el_gamal_decrypt(p=None, g=None, y=None, x=None, a=None, b=None) -> (str, int):
     res = f"Дешифрование данных алгоритмом Эль Гамаля:\n"
-    res+= f"message = (b / a^x) mod p\n"
-    res+= f"message = ({b} / a^{x}) mod {p}\n"
+    res += f"message = (b / a^x) mod p\n"
+    res += f"message = ({b} / a^{x}) mod {p}\n"
     s, a_pow_x = quick_pow(a, x, p)
-    res+=s
+    res += s
     s, m = solve_congruence(a_pow_x, b, p, "message")
-    res+=s
-    res+= f"message = {m}\n"
+    res += s
+    res += f"message = {m}\n"
     return res, m
 
 
@@ -203,39 +203,39 @@ def el_gamal_sign(m=None, p=None, g=None, y=None, x=None, k=None) -> (str, int, 
     res = f"Подпись сообщения алгоритмом Эль Гамаля:\n"
 
     if y == None:
-        res+=f"y = {g}^{x} mod {p}\n"
+        res += f"y = {g}^{x} mod {p}\n"
         s, y = quick_pow(g, x, p)
-        res+=s
-    
-    res+=f"r = g^k mod p\n"
-    res+=f"r = {g}^{k} mod {p}\n"
+        res += s
+
+    res += f"r = g^k mod p\n"
+    res += f"r = {g}^{k} mod {p}\n"
     s, r = quick_pow(g, k, p)
-    res+=s
-    res+=f"sig = (m - x*r/k) mod (p - 1)\n"
-    res+=f"sig = ({m - x*r}/{k}) mod {p - 1}\n"
+    res += s
+    res += f"sig = (m - x*r/k) mod (p - 1)\n"
+    res += f"sig = ({m - x*r}/{k}) mod {p - 1}\n"
     s, sig = solve_congruence(k, m - x*r, p - 1)
-    res+=s
-    res+= f"Подписанное сообщение <{m}, {r}, {sig}>\n"
+    res += s
+    res += f"Подписанное сообщение <{m}, {r}, {sig}>\n"
 
     return res, m, r, sig
 
 
 def el_gamal_check_sign(m=None, p=None, g=None, y=None, r=None, sig=None) -> str:
     res = f"Проверка подписи алгоритмом Эль Гамаля:\n"
-    res+= f"Подписанное сообщение <{m}, {r}, {sig}>, открытый ключ y={y}\n"
-    res+=f"Проверяем сравнение y^r * r^s mod p = g^m mod p\n"
-    res+=f"{y}^{r} * {r}^{sig} mod {p} ? {g}^{m} mod {p}\n"
+    res += f"Подписанное сообщение <{m}, {r}, {sig}>, открытый ключ y={y}\n"
+    res += f"Проверяем сравнение y^r * r^s mod p = g^m mod p\n"
+    res += f"{y}^{r} * {r}^{sig} mod {p} ? {g}^{m} mod {p}\n"
     s, y_pow_r = quick_pow(y, r, p)
     s, r_pow_sig = quick_pow(r, sig, p)
     left_value = y_pow_r*r_pow_sig % p
     s, right_value = quick_pow(g, m, p)
-    res+=f"{y_pow_r} * {r_pow_sig} mod {p} ? {right_value} mod {p}\n"
-    res+=f"{left_value} mod {p} ? {right_value} mod {p}\n"
+    res += f"{y_pow_r} * {r_pow_sig} mod {p} ? {right_value} mod {p}\n"
+    res += f"{left_value} mod {p} ? {right_value} mod {p}\n"
     if (left_value == right_value):
-        res+=f"Подпись верна\n"
+        res += f"Подпись верна\n"
     else:
-        res+=f"Подпись неверна\n"
-    
+        res += f"Подпись неверна\n"
+
     return res
 
 
@@ -288,21 +288,46 @@ def psum(t1, t2, a, p):
         y = (-(t2[1] + alfa*(x - t2[0]))) % p
         return (x, y), f'alfa = {alfa}\n'
 
-#Найти группу точек(перечислить) эллиптической кривой y^2=ax^3+bx+c над Fp
+
 def z1(p, a, b, c):
-    res = f'Найти группу точек(перечислить) эллиптической кривой y^2={a}x^3+{b}x+{c} над F{p}\n'
-    res += f'Составим таблицу квадратов для F{p} и определим какие из точек при подстановке в y^2={a}x^3+{b}x+{c} дают полный квадрат\n'
+    res = f'Найти группу точек(перечислить) эллиптической кривой y^2 = {a}x^3 + {b}x + {c} над F{p}\n'
+    res += f'Составим таблицу квадратов для F{p} и определим какие из точек при подстановке в y^2 = {a}x^3 + {b}x + {c} дают полный квадрат\n'
 
     res += 'x     |' + ' '.join([f'{x:<5}|' for x in range(0, p)]) + '\n'
-    res += 'x^2   |' + ' '.join([f'{(x**2)%p:<5}|' for x in range(0, p)]) + '\n'
-    res += 'x^3   |' + ' '.join([f'{(x**3)%p:<5}|' for x in range(0, p)]) + '\n'
-    res += f'{b:<2}x   |' + ' '.join([f'{(x*b)%p:<5}|' for x in range(0, p)]) + '\n'
-    y_sqr = [(a*(x**3) + b*x + c)%p for x in range(0, p)]
+    res += 'x^2   |' + \
+        ' '.join([f'{(x**2)%p:<5}|' for x in range(0, p)]) + '\n'
+    res += 'x^3   |' + \
+        ' '.join([f'{(x**3)%p:<5}|' for x in range(0, p)]) + '\n'
+    res += f'{b:<2}x   |' + \
+        ' '.join([f'{(x*b)%p:<5}|' for x in range(0, p)]) + '\n'
+    y_sqr = [(a*(x**3) + b*x + c) % p for x in range(0, p)]
     res += 'y^2   |' + ' '.join([f'{y:<5}|' for y in y_sqr]) + '\n'
     y_sqrt = [sqrt(y, p) for y in y_sqr]
-    res += 'y1 y2 |' + ' '.join([f'{y[0]:<2}' + f' {y[1]:<2}|' if len(y) == 2 else '  -  |' for y in y_sqrt]) + '\n'
+    res += 'y1 y2 |' + \
+        ' '.join([f'{y[0]:<2}' + f' {y[1]:<2}|' if len(y)
+                 == 2 else '  -  |' for y in y_sqrt]) + '\n'
 
     res += 'В ответ нужно выписать все точки (x, y1) (x, y2) и 0'
+
+    return res
+
+
+# y^2 = koef2 * x^2 + koef1 * x + koef0
+def z2(p, koef1, x, y):
+    res = f'Для точки ({x}, {y}) определить, является ли она генератором всей'
+    res += f' группы точек кривой y^2= koef2 * x^3 + {koef1}x + koef0 над F{p}, либо подгруппы\n'
+
+    (x_el, y_el), alfa = psum((x, y), (x, y), koef1, p)
+    res += f'Вычисление точки 2P: ({x_el}, {y_el}), {alfa}\n'
+    N = 2
+    try:
+        while (x, y) != (x_el, y_el):
+            N += 1
+            (x_el, y_el), alfa = psum((x_el, y_el), (x, y), koef1, p)
+            res += f'Вычисление точки {N}P: ({x_el}, {y_el}), {alfa}\n'
+    except:
+        res+= f'Вычисление точки {N}P: (0, 0)\n'
+        res+= f'Порядок подгруппы равен {N} \n'
 
     return res
 
@@ -317,8 +342,8 @@ def z4(g, a, b, p):
     return res
 
 
-#вспомогательная функция
-def s1(g, a, p, k): #я заебался придумывать названия переменных и функций
+# вспомогательная функция
+def s1(g, a, p, k):
     if k == 2:
         r, ret = psum(g, g, a, p)
         return r, ret + f'G + G = {r}\n'
@@ -334,12 +359,12 @@ def s1(g, a, p, k): #я заебался придумывать названия
         return r, s + ret + f'{k}G + G = {r}\n'
 
 
-#aaa - второй коэфф в данном уравнении
-def z5(g, a, b, p, aaa): #я заебался придумывать названия переменных
+# y^2 = koef2 * x^2 + koef1 * x + koef0
+def z5(g, a, b, p, koef1):
     res = f'Генерация ключа по протоколу Диффи-Хеллмана:\n'
     res += f'K = (ab) G\n'
     k = a * b
-    K, s = s1(g, aaa, p, k)
+    K, s = s1(g, koef1, p, k)
     res += s
     res += f'K = {K}\n'
     return res
@@ -347,29 +372,30 @@ def z5(g, a, b, p, aaa): #я заебался придумывать назва�
 
 def test():
     #output, num = quick_pow(175, 235, 257)
-    #print(output)
+    # print(output)
     #output, num = solve_congruence(7, 2, 10)
-    #print(output)
+    # print(output)
     #output, num = rsa_encrypt(p=7, q=11, m=29, d=7)
-    #print(output)
+    # print(output)
     #output, num = rsa_decrypt(p=7, q=11, e=43, c=19)
-    #print(output)
+    # print(output)
     #output, num = rsa_sign(p=5, q=11, d=3, m=40)
-    #print(output)
+    # print(output)
     #output, num = rsa_check_sign(p=5, q=11, d=3, c=35)
-    #print(output)
+    # print(output)
     #output, a, b = el_gamal_encrypt(m=5, p=29, g=10, y=8, x=5, k=5)
-    #print(output)
+    # print(output)
     #output, num = el_gamal_decrypt(p=23, g=5, y=9, x=10, a=10, b=18)
-    #print(output)
+    # print(output)
     #output, m, r, sig = el_gamal_sign(m=3, p=23, g=5, y=17, x=7, k=5)
-    #print(output)
+    # print(output)
     #output = el_gamal_check_sign(m=3, p=23, g=5, y=17, r=20, sig=21)
-    #print(output)
+    # print(output)
     #output, primality = miller_test(a=104, n=145)
-    output = z1(p=13, a=1, b=-2, c=-10)
-    output = z4(g=10, a=9, b=13, p=17)
-    output = z5(g=(2, 1), a=2, b=3, p=11, aaa=-5)
+    #output = z1(p=13, a=1, b=-2, c=-10)
+    output = z2(p=17, koef1=-10, x=6, y=9)
+    #output = z4(g=10, a=9, b=13, p=17)
+    #output = z5(g=(2, 1), a=2, b=3, p=11, koef1=-5)
     print(output)
 
 
